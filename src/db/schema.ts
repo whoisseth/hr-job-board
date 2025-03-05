@@ -1,13 +1,15 @@
 import { integer, text, sqliteTableCreator } from "drizzle-orm/sqlite-core";
 
 export const accountTypeEnum = ["email", "google", "github"] as const;
+export const userRoleEnum = ["candidate", "recruiter"] as const;
 
-const sqliteTable = sqliteTableCreator((name) => `app_${name}`);
+const sqliteTable = sqliteTableCreator((name) => `${name}`);
 
 export const users = sqliteTable("user", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   email: text("email").unique(),
   emailVerified: integer("email_verified", { mode: "timestamp" }),
+  role: text("role", { enum: userRoleEnum }),
 });
 
 export const accounts = sqliteTable("accounts", {
@@ -72,6 +74,6 @@ export const sessions = sqliteTable("session", {
   expiresAt: integer("expires_at").notNull(),
 });
 
-export type User = typeof users.$inferSelect;
+export type User = typeof users.$inferSelect & { role: typeof userRoleEnum[number] | null; };
 export type Profile = typeof profiles.$inferSelect;
 export type Session = typeof sessions.$inferSelect;
