@@ -8,6 +8,13 @@
       "when": 1741199194817,
       "tag": "0000_strong_magus",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1741199411104,
+      "tag": "0001_gigantic_cyclops",
+      "breakpoints": true
     }
   ]
 }

@@ -8,6 +8,7 @@ const sqliteTable = sqliteTableCreator((name) => `${name}`);
 export const users = sqliteTable("user", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   email: text("email").unique(),
+  userName: text("userName"),
   emailVerified: integer("email_verified", { mode: "timestamp" }),
   role: text("role", { enum: userRoleEnum }),
 });
@@ -74,6 +75,8 @@ export const sessions = sqliteTable("session", {
   expiresAt: integer("expires_at").notNull(),
 });
 
-export type User = typeof users.$inferSelect & { role: typeof userRoleEnum[number] | null; };
+export type User = typeof users.$inferSelect & {
+  role: (typeof userRoleEnum)[number] | null;
+};
 export type Profile = typeof profiles.$inferSelect;
 export type Session = typeof sessions.$inferSelect;
