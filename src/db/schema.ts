@@ -11,6 +11,7 @@ export const users = sqliteTable("user", {
   userName: text("userName"),
   emailVerified: integer("email_verified", { mode: "timestamp" }),
   role: text("role", { enum: userRoleEnum }),
+  isOnboarded: integer("is_onboarded", { mode: "boolean" }).default(false),
 });
 
 export const accounts = sqliteTable("accounts", {

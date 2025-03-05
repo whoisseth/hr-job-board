@@ -13,7 +13,7 @@ const SESSION_COOKIE_NAME = "session";
 
 export async function setSessionTokenCookie(
   token: string,
-  expiresAt: Date,
+  expiresAt: Date
 ): Promise<void> {
   const cookieStore = await cookies();
   cookieStore.set(SESSION_COOKIE_NAME, token, {
