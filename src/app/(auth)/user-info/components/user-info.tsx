@@ -11,7 +11,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { useToast } from "@/components/ui/use-toast";
 import { LoaderButton } from "@/components/loader-button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { addUserInfo } from "../actions";
@@ -19,9 +18,9 @@ import { useTransition } from "react";
 import { userInfoSchema } from "../type";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { toast } from "sonner";
 
 export default function UserInfo() {
-  const { toast } = useToast();
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
@@ -34,23 +33,21 @@ export default function UserInfo() {
   });
 
   async function onSubmit(values: z.infer<typeof userInfoSchema>) {
-    console.log("values -", values);
-    console.log("Type of values:", typeof values);
     startTransition(async () => {
       try {
         await addUserInfo(values);
-        toast({
-          title: "Success",
-          description: "User info added successfully",
-        });
-        router.push("/dashboard");
+        toast.success("Profile created successfully as candidate.");
+        if (values.role === "candidate") {
+          router.push("/candidate/dashboard");
+        } else if (values.role === "recruiter") {
+          router.push("/recruiter/dashboard");
+        } else {
+          toast.error("Invalid role");
+        }
       } catch (error) {
         console.log("error-", error);
         console.error("Full error details:", error);
-        toast({
-          title: "Error",
-          description: "Something went wrong",
-        });
+        toast.error("Something went wrong");
       }
     });
   }

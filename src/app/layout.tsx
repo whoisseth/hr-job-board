@@ -9,6 +9,7 @@ import { Libre_Franklin } from "next/font/google";
 import { Providers } from "./providers";
 import { Toaster } from "@/components/ui/toaster";
 import { Header } from "./_header/header";
+import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 
 const archivo = Archivo({
   subsets: ["latin"],
@@ -22,7 +23,7 @@ const libre_franklin = Libre_Franklin({
 });
 
 export const metadata: Metadata = {
-  title: "RWU Template",
+  title: "Mini HR Job Board",
   icons: [
     { rel: "icon", type: "image/png", sizes: "48x48", url: "/favicon.ico" },
     {
@@ -51,9 +52,8 @@ export const metadata: Metadata = {
     },
     { rel: "manifest", url: "/site.webmanifest" },
   ],
-  keywords: "yolo",
-  description:
-    "A simple next.js template including drizzle and arctic and oslo auth",
+  keywords: ["job", "seeker", "recruiter", "job board", "mini", "hr", "job board"],
+  description: "Mini HR Job Board for job seekers and recruiters",
 };
 
 export default async function RootLayout({
@@ -66,7 +66,7 @@ export default async function RootLayout({
       <body
         className={cn(
           "min-h-screen bg-background antialiased",
-          archivo.variable + " " + libre_franklin.variable,
+          archivo.variable + " " + libre_franklin.variable
         )}
       >
         <Providers>
@@ -75,6 +75,7 @@ export default async function RootLayout({
           <div className="container mx-auto w-full py-12">{children}</div>
         </Providers>
         <Toaster />
+        <SonnerToaster position="top-center" />
       </body>
     </html>
   );
