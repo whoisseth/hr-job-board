@@ -81,6 +81,9 @@ export const jobs = sqliteTable("job", {
   title: text("title").notNull(),
   description: text("description").notNull(),
   status: text("status", { enum: ["open", "closed"] }).notNull(),
+  recruiterId: integer("recruiter_id", { mode: "number" })
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp" }),
 });

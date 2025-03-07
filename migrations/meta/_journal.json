@@ -43,6 +43,13 @@
       "when": 1741348811955,
       "tag": "0005_great_moondragon",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "6",
+      "when": 1741368619003,
+      "tag": "0006_lame_tarot",
+      "breakpoints": true
     }
   ]
 }

@@ -28,6 +28,7 @@ export async function createJob(data: CreateJobInput) {
       .insert(jobs)
       .values({
         ...data,
+        recruiterId: user.id,
         createdAt: new Date(),
         updatedAt: new Date(),
       })
@@ -74,10 +75,7 @@ export async function getJobs() {
   }
 
   try {
-    const allJobs = await db
-      .select()
-      .from(jobs)
-      .orderBy(desc(jobs.createdAt));
+    const allJobs = await db.select().from(jobs).orderBy(desc(jobs.createdAt));
 
     return { success: true, data: allJobs };
   } catch (error) {
@@ -85,5 +83,29 @@ export async function getJobs() {
     return { success: false, error: "Failed to fetch jobs" };
   }
 }
+
+export async function getRecruiterJobs() {
+  const user = await getCurrentUser();
+
+  if (!user) {
+    return { success: false, error: "Unauthorized" };
+  }
+
+  try {
+    const recruiterJobs = await db
+      .select()
+      .from(jobs)
+      .where(eq(jobs.recruiterId, user.id))
+      .orderBy(desc(jobs.createdAt));
+
+    return { success: true, data: recruiterJobs };
+  } catch (error) {
+    console.error("Error fetching recruiter jobs:", error);
+    return { success: false, error: "Failed to fetch recruiter jobs" };
+  }
+}
+
+
+
 
 // get all

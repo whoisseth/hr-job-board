@@ -4,10 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { JobListingCard } from "@/components/job-listing-card";
 import { CreateJobDialog } from "@/components/create-job-dialog";
-import { getJobs } from "../action";
+import { getRecruiterJobs } from "../action";
 
 export default async function RecruiterDashboardPage() {
-  const { data: jobListings = [], error } = await getJobs();
+  const { data: jobListings = [], error } = await getRecruiterJobs();
+
+  console.log(jobListings);
 
   if (error) {
     return (
