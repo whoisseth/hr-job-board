@@ -1,34 +1,70 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { Calendar } from "lucide-react"
+import { useState } from "react";
+import Link from "next/link";
+import { Calendar } from "lucide-react";
+import { useRouter } from "next/navigation";
 
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Switch } from "@/components/ui/switch"
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { EditJobDialog } from "@/components/edit-job-dialog";
+import { updateJob } from "@/app/(roles)/recruiter/action";
+import { toast } from "sonner";
 
 interface JobListingCardProps {
   job: {
-    id: string
-    title: string
-    description: string
-    status: string
-    createdAt: Date
-    applicantsCount?: number
-  }
-  isRecruiter: boolean
-  href: string
-  hasApplied?: boolean
+    id: number;
+    title: string;
+    description: string;
+    status: "open" | "closed";
+    createdAt: Date;
+    updatedAt: Date | null;
+  };
+  isRecruiter: boolean;
+  href: string;
+  hasApplied?: boolean;
+  showApplyButton?: boolean;
 }
 
-export function JobListingCard({ job, isRecruiter, href, hasApplied = false }: JobListingCardProps) {
-  const [status, setStatus] = useState(job.status)
+export function JobListingCard({
+  job,
+  isRecruiter,
+  href,
+  hasApplied = false,
+  showApplyButton = false,
+}: JobListingCardProps) {
+  const [status, setStatus] = useState(job.status);
+  const [isPending, setIsPending] = useState(false);
+  const router = useRouter();
 
-  const handleStatusChange = (checked: boolean) => {
-    setStatus(checked ? "open" : "closed")
-    // Here you would typically call an API to update the job status
-  }
+  const handleStatusChange = async (checked: boolean) => {
+    try {
+      setIsPending(true);
+      const newStatus = checked ? "open" : "closed";
+
+      const result = await updateJob({
+        id: job.id,
+        title: job.title,
+        description: job.description,
+        status: newStatus,
+      });
+
+      if (result.success) {
+        setStatus(newStatus);
+        toast.success(
+          `Job ${newStatus === "open" ? "opened" : "closed"} successfully`
+        );
+        router.refresh();
+      } else {
+        toast.error(result.error || "Failed to update job status");
+      }
+    } catch (error) {
+      toast.error("Something went wrong");
+    } finally {
+      setIsPending(false);
+    }
+  };
 
   return (
     <div className="flex flex-col rounded-lg border p-4 shadow-sm">
@@ -36,7 +72,9 @@ export function JobListingCard({ job, isRecruiter, href, hasApplied = false }: J
         <div className="flex-1 space-y-1">
           <div className="flex items-center gap-2">
             <h3 className="text-lg font-semibold">{job.title}</h3>
-            <Badge variant={status === "open" ? "default" : "secondary"}>{status === "open" ? "Open" : "Closed"}</Badge>
+            <Badge variant={status === "open" ? "default" : "secondary"}>
+              {status === "open" ? "Open" : "Closed"}
+            </Badge>
           </div>
           <p className="text-sm text-muted-foreground">
             <Calendar className="mr-1 inline-block h-3 w-3" />
@@ -45,38 +83,31 @@ export function JobListingCard({ job, isRecruiter, href, hasApplied = false }: J
           <p className="mt-2 text-sm">{job.description}</p>
         </div>
 
-        <div className="flex flex-col items-end gap-2">
-          {isRecruiter ? (
-            <>
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-muted-foreground">{status === "open" ? "Open" : "Closed"}</span>
-                <Switch
-                  checked={status === "open"}
-                  onCheckedChange={handleStatusChange}
-                  aria-label="Toggle job status"
-                />
-              </div>
-              {job.applicantsCount !== undefined && (
-                <span className="text-sm text-muted-foreground">
-                  {job.applicantsCount} applicant{job.applicantsCount !== 1 ? "s" : ""}
-                </span>
-              )}
-              <Link href={href}>
-                <Button variant="outline" size="sm">
-                  View Details
-                </Button>
-              </Link>
-            </>
-          ) : (
+        {isRecruiter && (
+          <div className="flex items-center gap-2">
+            <Switch
+              checked={status === "open"}
+              onCheckedChange={handleStatusChange}
+              disabled={isPending}
+              aria-label="Toggle job status"
+            />
+            <EditJobDialog job={job} />
             <Link href={href}>
-              <Button variant={hasApplied ? "secondary" : "default"} size="sm" disabled={hasApplied}>
-                {hasApplied ? "Applied" : "Apply"}
+              <Button variant="outline" size="sm">
+                View Details
               </Button>
             </Link>
-          )}
-        </div>
+          </div>
+        )}
       </div>
-    </div>
-  )
-}
 
+      {showApplyButton && (
+        <Link href={href}>
+          <Button variant="default" className="mt-2">
+            Apply
+          </Button>
+        </Link>
+      )}
+    </div>
+  );
+}

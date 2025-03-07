@@ -1,4 +1,8 @@
+import { notFound } from "next/navigation";
 import { ApplicationForm } from "./application-form";
+import { db } from "@/db";
+import { jobs } from "@/db/schema";
+import { eq } from "drizzle-orm";
 
 export default async function JobApplicationPage({
   params,
@@ -7,23 +11,31 @@ export default async function JobApplicationPage({
 }) {
   const { job_id } = await params;
 
-  // Mock job data - in a real app, you would fetch this from an API
-  const job = {
-    id: job_id,
-    title: "Frontend Developer",
-    description:
-      "We are looking for a skilled Frontend Developer with experience in React, TypeScript, and TailwindCSS.",
-    requirements:
-      "- 2+ years of experience with React\n- Strong knowledge of TypeScript\n- Experience with TailwindCSS\n- Good understanding of responsive design principles",
-    company: "Acme Inc.",
-    location: "Remote",
-    createdAt: new Date("2023-05-15"),
-  };
+  if (isNaN(Number(job_id))) {
+    notFound();
+  }
+
+  const job = await db.query.jobs.findFirst({
+    where: eq(jobs.id, Number(job_id)),
+  });
+
+  if (!job) {
+    notFound();
+  }
 
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold tracking-tight">Apply for Job</h1>
-      <ApplicationForm jobId={job_id} job={job} />
+      <ApplicationForm
+        jobId={job_id}
+        job={{
+          title: job.title,
+          description: job.description,
+          requirements: "", // Add empty requirements since it's not in the DB schema
+          company: "Acme Inc.", // Mock company name for now
+          location: "Remote", // Mock location for now
+        }}
+      />
     </div>
   );
 }

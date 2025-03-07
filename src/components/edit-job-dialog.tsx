@@ -27,22 +27,36 @@ import {
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { createJob } from "@/app/(roles)/recruiter/action";
+import { updateJob } from "@/app/(roles)/recruiter/action";
 import { toast } from "sonner";
+import { Pencil } from "lucide-react";
 
 const formSchema = z.object({
+  id: z.number(),
   title: z.string().min(2, {
     message: "Title must be at least 2 characters.",
   }),
   description: z.string().min(10, {
     message: "Description must be at least 10 characters.",
   }),
+  requirements: z.string().min(10, {
+    message: "Requirements must be at least 10 characters.",
+  }),
   status: z.enum(["open", "closed"], {
     required_error: "You need to select a status.",
   }),
 });
 
-export function CreateJobDialog({ children }: { children: React.ReactNode }) {
+interface EditJobDialogProps {
+  job: {
+    id: number;
+    title: string;
+    description: string;
+    status: "open" | "closed";
+  };
+}
+
+export function EditJobDialog({ job }: EditJobDialogProps) {
   const [open, setOpen] = React.useState(false);
   const [isPending, startTransition] = React.useTransition();
   const router = useRouter();
@@ -50,24 +64,24 @@ export function CreateJobDialog({ children }: { children: React.ReactNode }) {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      title: "",
-      description: "",
-      status: "open",
+      id: job.id,
+      title: job.title,
+      description: job.description,
+      status: job.status,
     },
   });
 
   async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
       startTransition(async () => {
-        const result = await createJob(values);
+        const result = await updateJob(values);
 
         if (result.success) {
-          toast.success("Job created successfully");
+          toast.success("Job updated successfully");
           setOpen(false);
-          form.reset();
           router.refresh();
         } else {
-          toast.error(result.error || "Failed to create job");
+          toast.error(result.error || "Failed to update job");
         }
       });
     } catch (error) {
@@ -77,12 +91,16 @@ export function CreateJobDialog({ children }: { children: React.ReactNode }) {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{children}</DialogTrigger>
+      <DialogTrigger asChild>
+        <Button variant="ghost" size="icon">
+          <Pencil className="h-4 w-4" />
+        </Button>
+      </DialogTrigger>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>Create New Job</DialogTitle>
+          <DialogTitle>Edit Job</DialogTitle>
           <DialogDescription>
-            Fill in the details for the new job posting.
+            Update the details for this job posting.
           </DialogDescription>
         </DialogHeader>
         <Form {...form}>
@@ -149,7 +167,7 @@ export function CreateJobDialog({ children }: { children: React.ReactNode }) {
             />
             <DialogFooter>
               <Button type="submit" disabled={isPending}>
-                {isPending ? "Creating..." : "Create Job"}
+                {isPending ? "Updating..." : "Update Job"}
               </Button>
             </DialogFooter>
           </form>

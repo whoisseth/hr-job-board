@@ -80,7 +80,6 @@ export const jobs = sqliteTable("job", {
   id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
   title: text("title").notNull(),
   description: text("description").notNull(),
-  requirements: text("requirements").notNull(),
   status: text("status", { enum: ["open", "closed"] }).notNull(),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp" }),
@@ -96,7 +95,9 @@ export const applications = sqliteTable("application", {
     .notNull(),
   resumeUrl: text("resume_url").notNull(),
   parsedDetails: text("parsed_details").notNull(),
-  status: text("status", { enum: ["new", "shortlisted", "rejected"] }).notNull(),
+  status: text("status", {
+    enum: ["new", "shortlisted", "rejected"],
+  }).notNull(),
   createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
   updatedAt: integer("updated_at", { mode: "timestamp" }),
 });

@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { Suspense, cache } from "react";
-import { getCurrentUser } from "@/lib/session";
+import { Suspense } from "react";
+import { getCurrentUser, User } from "@/lib/session";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -11,17 +11,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import {
-  Loader2Icon,
-  LogOut,
-  SquareDashedKanban,
-} from "lucide-react";
-import { getUserProfileUseCase } from "@/use-cases/users";
+import { Loader2Icon, LogOut, SquareDashedKanban } from "lucide-react";
 import { ModeToggle } from "./mode-toggle";
-import { MenuButton } from "./menu-button";
-import { UserId } from "@/types";
-
-const profilerLoader = cache(getUserProfileUseCase);
 
 export async function Header() {
   return (
@@ -48,14 +39,13 @@ export async function Header() {
   );
 }
 
-async function ProfileAvatar({ userId }: { userId: number }) {
-  const profile = await profilerLoader(userId);
-
+async function ProfileAvatar({ user }: { user: User }) {
+  if (!user) return null;
   return (
     <Avatar>
       <AvatarImage src={"/next.svg"} />
       <AvatarFallback>
-        {profile.displayName?.substring(0, 2).toUpperCase() ?? "AA"}
+        {user.userName?.substring(0, 2).toUpperCase() ?? "AA"}
       </AvatarFallback>
     </Avatar>
   );
@@ -64,7 +54,6 @@ async function ProfileAvatar({ userId }: { userId: number }) {
 async function HeaderActions() {
   const user = await getCurrentUser();
   const isSignedIn = !!user;
-
   return (
     <>
       {isSignedIn ? (
@@ -72,10 +61,7 @@ async function HeaderActions() {
           <div className="hidden md:block">
             <ModeToggle />
           </div>
-          <ProfileDropdown userId={user.id} />
-          <div className="md:hidden">
-            <MenuButton />
-          </div>
+          <ProfileDropdown user={user} />
         </>
       ) : (
         <>
@@ -89,8 +75,8 @@ async function HeaderActions() {
     </>
   );
 }
-async function ProfileDropdown({ userId }: { userId: UserId }) {
-  const profile = await profilerLoader(userId);
+async function ProfileDropdown({ user }: { user: User }) {
+  if (!user) return null;
   return (
     <DropdownMenu>
       <DropdownMenuTrigger>
@@ -101,12 +87,12 @@ async function ProfileDropdown({ userId }: { userId: UserId }) {
             </div>
           }
         >
-          <ProfileAvatar userId={userId} />
+          <ProfileAvatar user={user} />
         </Suspense>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent className="space-y-2" align="start">
-        <DropdownMenuLabel>{profile.displayName}</DropdownMenuLabel>
+        <DropdownMenuLabel>{user.userName}</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild className="cursor-pointer">
           <Link className="flex items-center" href={"/api/sign-out"}>

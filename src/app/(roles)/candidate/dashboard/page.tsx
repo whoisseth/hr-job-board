@@ -1,64 +1,50 @@
 import Link from "next/link";
-import { Briefcase, FileText } from "lucide-react";
+import { Briefcase, Eye, FileText, Upload } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { JobListingCard } from "@/components/job-listing-card";
-
-// Mock data for job listings
-const jobListings = [
-  {
-    id: "job_1",
-    title: "Frontend Developer",
-    description:
-      "We are looking for a skilled Frontend Developer with experience in React, TypeScript, and TailwindCSS.",
-    status: "open",
-    createdAt: new Date("2023-05-15"),
-  },
-  {
-    id: "job_2",
-    title: "Frontend Developer",
-    description:
-      "We are looking for a skilled Frontend Developer with experience in React, TypeScript, and TailwindCSS.",
-    status: "open",
-    createdAt: new Date("2023-06-20"),
-  },
-  {
-    id: "job_3",
-    title: "Frontend Developer",
-    description:
-      "We are looking for a skilled Frontend Developer with experience in React, TypeScript, and TailwindCSS.",
-    status: "open",
-    createdAt: new Date("2023-04-10"),
-  },
-];
+import { getJobs } from "../../recruiter/action";
 
 // Mock data for applications
 const applications = [
   {
-    id: "app_1",
-    jobId: "job_1",
+    id: 1,
+    jobId: 1,
     jobTitle: "Frontend Developer",
     status: "pending",
     appliedAt: new Date("2023-06-01"),
   },
   {
-    id: "app_2",
-    jobId: "job_2",
+    id: 2,
+    jobId: 2,
     jobTitle: "Frontend Developer",
     status: "shortlisted",
     appliedAt: new Date("2023-06-25"),
   },
   {
-    id: "app_3",
-    jobId: "job_3",
+    id: 3,
+    jobId: 3,
     jobTitle: "Frontend Developer",
     status: "rejected",
     appliedAt: new Date("2023-05-10"),
   },
 ];
 
-export default function CandidateDashboardPage() {
+export default async function CandidateDashboardPage() {
+  const { data: jobListings = [], error } = await getJobs();
+
+  if (error) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-semibold text-destructive">Error</h2>
+          <p className="text-muted-foreground">{error}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-bold tracking-tight">Candidate Dashboard</h1>
@@ -104,11 +90,15 @@ export default function CandidateDashboardPage() {
           <h2 className="text-xl font-semibold">Recent Job Listings</h2>
           <div className="flex items-center gap-4">
             <Link href="/candidate/resume">
-              <Button variant="outline">View Resume</Button>
+              <Button variant="outline">
+                <Upload className="mr-2 h-4 w-4" />
+                Upload Resume
+              </Button>
             </Link>
-            <Link href="/candidate/jobs">
-              <Button variant="link" className="h-auto p-0">
-                View All Jobs
+            <Link href="/candidate/resume">
+              <Button variant="outline">
+                <Eye className="mr-2 h-4 w-4" />
+                View Resume
               </Button>
             </Link>
           </div>
@@ -116,14 +106,15 @@ export default function CandidateDashboardPage() {
 
         <div className="space-y-4">
           {jobListings.map((job) => (
-            <JobListingCard
-              key={job.id}
-              job={job}
-              isRecruiter={false}
-              href={`/candidate/application/${job.id}`}
-              // Check if user has already applied to this job
-              hasApplied={applications.some((app) => app.jobId === job.id)}
-            />
+            <div key={job.id} className="flex items-center justify-between">
+              <JobListingCard
+                job={job}
+                isRecruiter={false}
+                href={`/candidate/application/${job.id}`}
+                hasApplied={applications.some((app) => app.jobId === job.id)}
+                showApplyButton={true}
+              />
+            </div>
           ))}
         </div>
       </div>

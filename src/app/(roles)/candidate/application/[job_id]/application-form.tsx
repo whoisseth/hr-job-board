@@ -15,6 +15,8 @@ import {
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { submitApplication } from "../../action";
+import { toast } from "sonner";
 
 interface ApplicationFormProps {
   jobId: string;
@@ -72,20 +74,41 @@ export function ApplicationForm({ jobId, job }: ApplicationFormProps) {
     setError(null);
 
     try {
-      // In a real app, you would upload the file to your server
-      // and process it with a resume parsing API
+      // In a real app, you would upload the file to a storage service
+      // and get back a URL. For now, we'll simulate this with a fake URL
+      const resumeUrl = `https://storage.example.com/resumes/${file.name}`;
 
-      // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      // In a real app, you would parse the resume with an API
+      // For now, we'll use a mock parsed details
+      const parsedDetails = JSON.stringify({
+        name: "John Doe",
+        email: "john@example.com",
+        skills: ["React", "TypeScript", "Node.js"],
+        experience: "5 years",
+        education: "Bachelor's in Computer Science",
+      });
 
-      setSuccess(true);
+      const result = await submitApplication({
+        jobId: parseInt(jobId),
+        resumeUrl,
+        parsedDetails,
+      });
 
-      // Redirect to applications page after successful submission
-      setTimeout(() => {
-        router.push("/candidate/applications");
-      }, 2000);
+      if (result.success) {
+        setSuccess(true);
+        toast.success("Application submitted successfully!");
+        
+        // Redirect to applications page after successful submission
+        setTimeout(() => {
+          router.push("/candidate/applications");
+        }, 2000);
+      } else {
+        setError(result.error || "Failed to submit application");
+        toast.error(result.error || "Failed to submit application");
+      }
     } catch (err) {
       setError("Failed to upload resume. Please try again.");
+      toast.error("Failed to upload resume. Please try again.");
     } finally {
       setIsUploading(false);
     }

@@ -12,7 +12,7 @@ export default async function RolesLayout({
 }>) {
   const user = await getCurrentUser();
   if (!user) {
-    return redirect("/login");
+    return redirect("/sign-in");
   }
   if (!user.role || !user.userName) {
     return redirect("/user-info");
