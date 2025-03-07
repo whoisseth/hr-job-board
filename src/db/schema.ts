@@ -76,6 +76,44 @@ export const sessions = sqliteTable("session", {
   expiresAt: integer("expires_at").notNull(),
 });
 
+export const jobs = sqliteTable("job", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  requirements: text("requirements").notNull(),
+  status: text("status", { enum: ["open", "closed"] }).notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp" }),
+});
+
+export const applications = sqliteTable("application", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  jobId: integer("job_id", { mode: "number" })
+    .references(() => jobs.id, { onDelete: "cascade" })
+    .notNull(),
+  candidateId: integer("candidate_id", { mode: "number" })
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
+  resumeUrl: text("resume_url").notNull(),
+  parsedDetails: text("parsed_details").notNull(),
+  status: text("status", { enum: ["new", "shortlisted", "rejected"] }).notNull(),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp" }),
+});
+
+export const resumes = sqliteTable("resume", {
+  id: integer("id", { mode: "number" }).primaryKey({ autoIncrement: true }),
+  candidateId: integer("candidate_id", { mode: "number" })
+    .references(() => users.id, { onDelete: "cascade" })
+    .notNull(),
+  url: text("url").notNull(),
+  fileType: text("file_type").notNull().default("application/pdf"),
+  fileSize: integer("file_size", { mode: "number" }).notNull(),
+  extractedText: text("extracted_text"),
+  createdAt: integer("created_at", { mode: "timestamp" }).notNull(),
+  updatedAt: integer("updated_at", { mode: "timestamp" }),
+});
+
 export type User = typeof users.$inferSelect & {
   role: (typeof userRoleEnum)[number] | null;
 };
