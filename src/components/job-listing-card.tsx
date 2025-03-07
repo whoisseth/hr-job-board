@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Calendar } from "lucide-react";
+import { Calendar, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
 
 import { Button } from "@/components/ui/button";
@@ -10,6 +10,18 @@ import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
 import { EditJobDialog } from "@/components/edit-job-dialog";
 import { updateJob } from "@/app/(roles)/recruiter/action";
+import { deleteJob } from "@/app/(roles)/recruiter/dashboard/[job_id]/action";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
 
 interface JobListingCardProps {
@@ -66,9 +78,27 @@ export function JobListingCard({
     }
   };
 
+  const handleDelete = async () => {
+    try {
+      setIsPending(true);
+      const result = await deleteJob(job.id);
+
+      if (result.success) {
+        toast.success("Job deleted successfully");
+        router.refresh();
+      } else {
+        toast.error(result.error || "Failed to delete job");
+      }
+    } catch (error) {
+      toast.error("Something went wrong");
+    } finally {
+      setIsPending(false);
+    }
+  };
+
   return (
-    <div className="flex flex-col rounded-lg border p-4 shadow-sm">
-      <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-start">
+    <div className="flex w-full justify-between rounded-lg border p-4 shadow-sm">
+      <div className="flex w-full flex-col justify-between gap-2 sm:flex-row sm:items-start">
         <div className="flex-1 space-y-1">
           <div className="flex items-center gap-2">
             <h3 className="text-lg font-semibold">{job.title}</h3>
@@ -97,6 +127,28 @@ export function JobListingCard({
                 View Details
               </Button>
             </Link>
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button variant="destructive" size="sm" disabled={isPending}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent>
+                <AlertDialogHeader>
+                  <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                    This action cannot be undone. This will permanently delete the job listing
+                    and all associated applications.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel>Cancel</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleDelete} disabled={isPending}>
+                    Delete
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
           </div>
         )}
       </div>

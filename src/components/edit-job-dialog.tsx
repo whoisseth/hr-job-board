@@ -39,9 +39,6 @@ const formSchema = z.object({
   description: z.string().min(10, {
     message: "Description must be at least 10 characters.",
   }),
-  requirements: z.string().min(10, {
-    message: "Requirements must be at least 10 characters.",
-  }),
   status: z.enum(["open", "closed"], {
     required_error: "You need to select a status.",
   }),

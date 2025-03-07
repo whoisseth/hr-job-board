@@ -19,6 +19,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { getJobDetails } from "./action";
+import { notFound } from "next/navigation";
 
 interface JobDetailsPageProps {
   params: Promise<{ job_id: string }>;
@@ -26,21 +28,13 @@ interface JobDetailsPageProps {
 
 export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
   const { job_id } = await params;
+  const job = await getJobDetails(Number(job_id));
 
-  // Mock job data - in a real app, you would fetch this from an API
-  const job = {
-    job_id,
-    title: "Frontend Developer",
-    description:
-      "We are looking for a skilled Frontend Developer with experience in React, TypeScript, and TailwindCSS.",
-    requirements:
-      "- 2+ years of experience with React\n- Strong knowledge of TypeScript\n- Experience with TailwindCSS\n- Good understanding of responsive design principles",
-    status: "open",
-    createdAt: new Date("2023-05-15"),
-    updatedAt: new Date("2023-05-15"),
-  };
+  if (!job || "error" in job) {
+    notFound();
+  }
 
-  // Mock applicants data
+  // Mock applicants data - In a real app, you would fetch this from an API
   const applicants = [
     {
       id: "app_1",
@@ -92,23 +86,17 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
         <CardHeader>
           <CardTitle>Job Details</CardTitle>
           <CardDescription>
-            Created on {job.createdAt.toLocaleDateString()}
+            Created on {new Date(job.createdAt).toLocaleDateString()}
             {job.updatedAt &&
-              job.updatedAt !== job.createdAt &&
-              ` • Updated on ${job.updatedAt.toLocaleDateString()}`}
+              new Date(job.updatedAt).getTime() !==
+                new Date(job.createdAt).getTime() &&
+              ` • Updated on ${new Date(job.updatedAt).toLocaleDateString()}`}
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div>
             <h3 className="font-medium">Description</h3>
             <p className="text-sm text-muted-foreground">{job.description}</p>
-          </div>
-
-          <div>
-            <h3 className="font-medium">Requirements</h3>
-            <p className="whitespace-pre-line text-sm text-muted-foreground">
-              {job.requirements}
-            </p>
           </div>
         </CardContent>
       </Card>
@@ -227,7 +215,93 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
             </Card>
           </TabsContent>
 
-          {/* Similar content for shortlisted and rejected tabs */}
+          <TabsContent value="shortlisted" className="mt-4">
+            <Card>
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Skills</TableHead>
+                      <TableHead>Experience</TableHead>
+                      <TableHead>Education</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {applicants
+                      .filter((applicant) => applicant.status === "shortlisted")
+                      .map((applicant) => (
+                        <TableRow key={applicant.id}>
+                          <TableCell className="font-medium">
+                            {applicant.name}
+                          </TableCell>
+                          <TableCell>{applicant.email}</TableCell>
+                          <TableCell>{applicant.skills}</TableCell>
+                          <TableCell>{applicant.experience}</TableCell>
+                          <TableCell>{applicant.education}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Button variant="outline" size="sm">
+                                View Resume
+                              </Button>
+                              <Button variant="outline" size="sm">
+                                Change Status
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="rejected" className="mt-4">
+            <Card>
+              <CardContent className="p-0">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Name</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Skills</TableHead>
+                      <TableHead>Experience</TableHead>
+                      <TableHead>Education</TableHead>
+                      <TableHead>Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {applicants
+                      .filter((applicant) => applicant.status === "rejected")
+                      .map((applicant) => (
+                        <TableRow key={applicant.id}>
+                          <TableCell className="font-medium">
+                            {applicant.name}
+                          </TableCell>
+                          <TableCell>{applicant.email}</TableCell>
+                          <TableCell>{applicant.skills}</TableCell>
+                          <TableCell>{applicant.experience}</TableCell>
+                          <TableCell>{applicant.education}</TableCell>
+                          <TableCell>
+                            <div className="flex items-center gap-2">
+                              <Button variant="outline" size="sm">
+                                View Resume
+                              </Button>
+                              <Button variant="outline" size="sm">
+                                Change Status
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          </TabsContent>
         </Tabs>
       </div>
     </div>
