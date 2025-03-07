@@ -28,6 +28,20 @@ The point of this template is to allow you to setup a project which has a lot of
 1. `npx drizzle-kit push` (will create your sqlite database)
 1. `npm run dev`
 
+### Test Credentials
+
+The application comes with two test accounts that you can use to test different user roles:
+
+#### Recruiter Account
+- Email: recruiter@example.com
+- Password: Test@123
+- Username: recruiter
+
+#### Candidate Account
+- Email: candidate@example.com
+- Password: Test@123
+- Username: candidate
+
 ### Setting up Google Provider
 
 If you want google login, you'll need to setup a google project and create some keys:
