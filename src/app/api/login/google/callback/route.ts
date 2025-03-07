@@ -6,6 +6,8 @@ import { getAccountByGoogleIdUseCase } from "@/use-cases/accounts";
 import { afterLoginUrl } from "@/app-config";
 import { setSession } from "@/lib/session";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(request: Request): Promise<Response> {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");

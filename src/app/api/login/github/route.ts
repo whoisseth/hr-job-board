@@ -2,6 +2,8 @@ import { github } from "@/lib/auth";
 import { generateState } from "arctic";
 import { cookies } from "next/headers";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(): Promise<Response> {
   const state = generateState();
   const url = await github.createAuthorizationURL(state, {

@@ -2,6 +2,8 @@ import { googleAuth } from "@/lib/auth";
 import { cookies } from "next/headers";
 import { generateCodeVerifier, generateState } from "arctic";
 
+export const dynamic = 'force-dynamic';
+
 export async function GET(): Promise<Response> {
   const state = generateState();
   const codeVerifier = generateCodeVerifier();
