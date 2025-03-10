@@ -11,6 +11,7 @@ This is a Next.js template which includes the following technology
 - zsa (server action validation)
 - tiered architecture example
 - aws ses emails
+- PDF parsing capabilities (inspired by [nextjs-pdf-parser](https://github.com/tuffstuff9/nextjs-pdf-parser))
 
 The point of this template is to allow you to setup a project which has a lot of the necessary authentication functionality out of the box, such as
 
@@ -20,6 +21,16 @@ The point of this template is to allow you to setup a project which has a lot of
 - email / password login
 - password reset flow email
 - account registration + confirmation emails
+
+### PDF Parsing Features
+
+This template includes PDF parsing capabilities, allowing you to:
+- Upload and parse PDF files
+- Extract text content from PDFs
+- Process PDF documents in your application
+- Handle PDF parsing on both client and server side
+
+The PDF parsing functionality is implemented using modern web technologies and follows best practices for file handling and processing.
 
 ## Running locally
 

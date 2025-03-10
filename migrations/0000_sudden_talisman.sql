@@ -9,6 +9,28 @@ CREATE TABLE `accounts` (
 	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
+CREATE TABLE `application` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`job_id` integer NOT NULL,
+	`candidate_id` integer NOT NULL,
+	`status` text NOT NULL,
+	`created_at` integer NOT NULL,
+	`updated_at` integer,
+	FOREIGN KEY (`job_id`) REFERENCES `job`(`id`) ON UPDATE no action ON DELETE cascade,
+	FOREIGN KEY (`candidate_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
+CREATE TABLE `job` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`title` text NOT NULL,
+	`description` text NOT NULL,
+	`status` text NOT NULL,
+	`recruiter_id` integer NOT NULL,
+	`created_at` integer NOT NULL,
+	`updated_at` integer,
+	FOREIGN KEY (`recruiter_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
 CREATE TABLE `magic_links` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`email` text NOT NULL,
@@ -34,6 +56,25 @@ CREATE TABLE `reset_tokens` (
 	FOREIGN KEY (`user_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
 );
 --> statement-breakpoint
+CREATE TABLE `resume` (
+	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
+	`candidate_id` integer NOT NULL,
+	`url` text NOT NULL,
+	`file_type` text DEFAULT 'application/pdf' NOT NULL,
+	`file_size` integer NOT NULL,
+	`extracted_text` text,
+	`skills` text DEFAULT '[]' NOT NULL,
+	`experience` text DEFAULT '{}' NOT NULL,
+	`projects` text DEFAULT '{}' NOT NULL,
+	`education` text DEFAULT '[]' NOT NULL,
+	`parsed_at` integer,
+	`parse_status` text DEFAULT 'pending' NOT NULL,
+	`parse_error` text,
+	`created_at` integer NOT NULL,
+	`updated_at` integer,
+	FOREIGN KEY (`candidate_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
+);
+--> statement-breakpoint
 CREATE TABLE `session` (
 	`id` text PRIMARY KEY NOT NULL,
 	`user_id` integer NOT NULL,
@@ -44,8 +85,10 @@ CREATE TABLE `session` (
 CREATE TABLE `user` (
 	`id` integer PRIMARY KEY AUTOINCREMENT NOT NULL,
 	`email` text,
+	`userName` text,
 	`email_verified` integer,
-	`role` text
+	`role` text,
+	`is_onboarded` integer DEFAULT false
 );
 --> statement-breakpoint
 CREATE TABLE `verify_email_tokens` (

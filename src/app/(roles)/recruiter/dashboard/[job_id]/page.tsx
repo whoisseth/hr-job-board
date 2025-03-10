@@ -19,8 +19,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { getJobDetails } from "./action";
+import { getJobDetails, getApplicants } from "./action";
 import { notFound } from "next/navigation";
+import { StatusDropdown } from "./components/status-dropdown";
 
 interface JobDetailsPageProps {
   params: Promise<{ job_id: string }>;
@@ -29,44 +30,22 @@ interface JobDetailsPageProps {
 export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
   const { job_id } = await params;
   const job = await getJobDetails(Number(job_id));
+  const { data: applicants = [], error } = await getApplicants(Number(job_id));
 
   if (!job || "error" in job) {
     notFound();
   }
 
-  // Mock applicants data - In a real app, you would fetch this from an API
-  const applicants = [
-    {
-      id: "app_1",
-      name: "John Doe",
-      email: "john@example.com",
-      skills: "React, TypeScript",
-      experience: "3 years",
-      education: "Bachelor's",
-      status: "new",
-      appliedAt: new Date("2023-06-01"),
-    },
-    {
-      id: "app_2",
-      name: "Jane Smith",
-      email: "jane@example.com",
-      skills: "React, JavaScript",
-      experience: "2 years",
-      education: "Master's",
-      status: "shortlisted",
-      appliedAt: new Date("2023-06-05"),
-    },
-    {
-      id: "app_3",
-      name: "Alex Johnson",
-      email: "alex@example.com",
-      skills: "React, TypeScript, TailwindCSS",
-      experience: "4 years",
-      education: "Bachelor's",
-      status: "rejected",
-      appliedAt: new Date("2023-06-10"),
-    },
-  ];
+  if (error) {
+    return (
+      <div className="flex h-[50vh] items-center justify-center">
+        <div className="text-center">
+          <h2 className="text-2xl font-semibold text-destructive">Error</h2>
+          <p className="text-muted-foreground">{error}</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -106,15 +85,35 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
           Applicants ({applicants.length})
         </h2>
 
-        <Tabs defaultValue="all">
-          <TabsList>
-            <TabsTrigger value="all">All</TabsTrigger>
-            <TabsTrigger value="new">New</TabsTrigger>
-            <TabsTrigger value="shortlisted">Shortlisted</TabsTrigger>
-            <TabsTrigger value="rejected">Rejected</TabsTrigger>
+        <Tabs defaultValue="all" className="space-y-4">
+          <TabsList className="bg-muted/50 dark:bg-background">
+            <TabsTrigger
+              value="all"
+              className="data-[state=active]:bg-background dark:data-[state=active]:bg-muted"
+            >
+              All
+            </TabsTrigger>
+            <TabsTrigger
+              value="new"
+              className="data-[state=active]:bg-background dark:data-[state=active]:bg-muted"
+            >
+              New
+            </TabsTrigger>
+            <TabsTrigger
+              value="shortlisted"
+              className="data-[state=active]:bg-background dark:data-[state=active]:bg-muted"
+            >
+              Shortlisted
+            </TabsTrigger>
+            <TabsTrigger
+              value="rejected"
+              className="data-[state=active]:bg-background dark:data-[state=active]:bg-muted"
+            >
+              Rejected
+            </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="all" className="mt-4">
+          <TabsContent value="all">
             <Card>
               <CardContent className="p-0">
                 <Table>
@@ -136,172 +135,100 @@ export default async function JobDetailsPage({ params }: JobDetailsPageProps) {
                           {applicant.name}
                         </TableCell>
                         <TableCell>{applicant.email}</TableCell>
-                        <TableCell>{applicant.skills}</TableCell>
+                        <TableCell>{applicant.skills.join(", ")}</TableCell>
                         <TableCell>{applicant.experience}</TableCell>
-                        <TableCell>{applicant.education}</TableCell>
+                        <TableCell>{applicant.education.join(", ")}</TableCell>
                         <TableCell>
-                          <Badge
-                            variant={
-                              applicant.status === "new"
-                                ? "outline"
-                                : applicant.status === "shortlisted"
-                                  ? "default"
-                                  : "secondary"
-                            }
-                          >
-                            {applicant.status.charAt(0).toUpperCase() +
-                              applicant.status.slice(1)}
-                          </Badge>
+                          <StatusDropdown
+                            currentStatus={applicant.status}
+                            applicationId={applicant.id}
+                            jobId={Number(job_id)}
+                          />
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <Button variant="outline" size="sm">
-                              View Resume
-                            </Button>
-                            <Button variant="outline" size="sm">
-                              Change Status
-                            </Button>
+                            {applicant.resumeUrl && (
+                              <Button variant="outline" size="sm" asChild>
+                                <Link href={applicant.resumeUrl} target="_blank">
+                                  View Resume
+                                </Link>
+                              </Button>
+                            )}
                           </div>
                         </TableCell>
                       </TableRow>
                     ))}
+                    {applicants.length === 0 && (
+                      <TableRow>
+                        <TableCell colSpan={7} className="h-24 text-center">
+                          No applicants found
+                        </TableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </CardContent>
             </Card>
           </TabsContent>
 
-          <TabsContent value="new" className="mt-4">
-            <Card>
-              <CardContent className="p-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Skills</TableHead>
-                      <TableHead>Experience</TableHead>
-                      <TableHead>Education</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {applicants
-                      .filter((applicant) => applicant.status === "new")
-                      .map((applicant) => (
-                        <TableRow key={applicant.id}>
-                          <TableCell className="font-medium">
-                            {applicant.name}
-                          </TableCell>
-                          <TableCell>{applicant.email}</TableCell>
-                          <TableCell>{applicant.skills}</TableCell>
-                          <TableCell>{applicant.experience}</TableCell>
-                          <TableCell>{applicant.education}</TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Button variant="outline" size="sm">
-                                View Resume
-                              </Button>
-                              <Button variant="outline" size="sm">
-                                Change Status
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="shortlisted" className="mt-4">
-            <Card>
-              <CardContent className="p-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Skills</TableHead>
-                      <TableHead>Experience</TableHead>
-                      <TableHead>Education</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {applicants
-                      .filter((applicant) => applicant.status === "shortlisted")
-                      .map((applicant) => (
-                        <TableRow key={applicant.id}>
-                          <TableCell className="font-medium">
-                            {applicant.name}
-                          </TableCell>
-                          <TableCell>{applicant.email}</TableCell>
-                          <TableCell>{applicant.skills}</TableCell>
-                          <TableCell>{applicant.experience}</TableCell>
-                          <TableCell>{applicant.education}</TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Button variant="outline" size="sm">
-                                View Resume
-                              </Button>
-                              <Button variant="outline" size="sm">
-                                Change Status
-                              </Button>
-                            </div>
+          {["new", "shortlisted", "rejected"].map((status) => (
+            <TabsContent key={status} value={status}>
+              <Card>
+                <CardContent className="p-0">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Name</TableHead>
+                        <TableHead>Email</TableHead>
+                        <TableHead>Skills</TableHead>
+                        <TableHead>Experience</TableHead>
+                        <TableHead>Education</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {applicants
+                        .filter((applicant) => applicant.status === status)
+                        .map((applicant) => (
+                          <TableRow key={applicant.id}>
+                            <TableCell className="font-medium">
+                              {applicant.name}
+                            </TableCell>
+                            <TableCell>{applicant.email}</TableCell>
+                            <TableCell>{applicant.skills.join(", ")}</TableCell>
+                            <TableCell>{applicant.experience}</TableCell>
+                            <TableCell>{applicant.education.join(", ")}</TableCell>
+                            <TableCell>
+                              <div className="flex items-center gap-2">
+                                {applicant.resumeUrl && (
+                                  <Button variant="outline" size="sm" asChild>
+                                    <Link href={applicant.resumeUrl} target="_blank">
+                                      View Resume
+                                    </Link>
+                                  </Button>
+                                )}
+                                <StatusDropdown
+                                  currentStatus={applicant.status}
+                                  applicationId={applicant.id}
+                                  jobId={Number(job_id)}
+                                />
+                              </div>
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      {applicants.filter((a) => a.status === status).length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan={6} className="h-24 text-center">
+                            No {status} applicants found
                           </TableCell>
                         </TableRow>
-                      ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="rejected" className="mt-4">
-            <Card>
-              <CardContent className="p-0">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Name</TableHead>
-                      <TableHead>Email</TableHead>
-                      <TableHead>Skills</TableHead>
-                      <TableHead>Experience</TableHead>
-                      <TableHead>Education</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {applicants
-                      .filter((applicant) => applicant.status === "rejected")
-                      .map((applicant) => (
-                        <TableRow key={applicant.id}>
-                          <TableCell className="font-medium">
-                            {applicant.name}
-                          </TableCell>
-                          <TableCell>{applicant.email}</TableCell>
-                          <TableCell>{applicant.skills}</TableCell>
-                          <TableCell>{applicant.experience}</TableCell>
-                          <TableCell>{applicant.education}</TableCell>
-                          <TableCell>
-                            <div className="flex items-center gap-2">
-                              <Button variant="outline" size="sm">
-                                View Resume
-                              </Button>
-                              <Button variant="outline" size="sm">
-                                Change Status
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                  </TableBody>
-                </Table>
-              </CardContent>
-            </Card>
-          </TabsContent>
+                      )}
+                    </TableBody>
+                  </Table>
+                </CardContent>
+              </Card>
+            </TabsContent>
+          ))}
         </Tabs>
       </div>
     </div>

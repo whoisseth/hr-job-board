@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import Link from "next/link";
 import { Calendar, Trash2 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -23,7 +23,9 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-
+import { createApplication } from "@/app/(roles)/candidate/dashboard/action";
+import { User } from "@/db/schema";
+import { LoaderButton } from "./loader-button";
 interface JobListingCardProps {
   job: {
     id: number;
@@ -34,67 +36,89 @@ interface JobListingCardProps {
     updatedAt: Date | null;
   };
   isRecruiter: boolean;
-  href: string;
+  href?: string;
   hasApplied?: boolean;
   showApplyButton?: boolean;
+  onApply?: () => void;
+  user?: User;
 }
 
 export function JobListingCard({
   job,
+  user,
   isRecruiter,
   href,
   hasApplied = false,
   showApplyButton = false,
+  onApply,
 }: JobListingCardProps) {
   const [status, setStatus] = useState(job.status);
-  const [isPending, setIsPending] = useState(false);
+  const [isPending, startTransition] = useTransition();
+
   const router = useRouter();
 
   const handleStatusChange = async (checked: boolean) => {
-    try {
-      setIsPending(true);
-      const newStatus = checked ? "open" : "closed";
+    startTransition(async () => {
+      try {
+        const newStatus = checked ? "open" : "closed";
 
-      const result = await updateJob({
-        id: job.id,
-        title: job.title,
-        description: job.description,
-        status: newStatus,
-      });
+        const result = await updateJob({
+          id: job.id,
+          title: job.title,
+          description: job.description,
+          status: newStatus,
+        });
 
-      if (result.success) {
-        setStatus(newStatus);
-        toast.success(
-          `Job ${newStatus === "open" ? "opened" : "closed"} successfully`
-        );
-        router.refresh();
-      } else {
-        toast.error(result.error || "Failed to update job status");
+        if (result.success) {
+          setStatus(newStatus);
+          toast.success(
+            `Job ${newStatus === "open" ? "opened" : "closed"} successfully`
+          );
+          router.refresh();
+        } else {
+          toast.error(result.error || "Failed to update job status");
+        }
+      } catch (error) {
+        toast.error("Something went wrong");
+      } finally {
       }
-    } catch (error) {
-      toast.error("Something went wrong");
-    } finally {
-      setIsPending(false);
-    }
+    });
   };
 
   const handleDelete = async () => {
-    try {
-      setIsPending(true);
-      const result = await deleteJob(job.id);
+    startTransition(async () => {
+      try {
+        const result = await deleteJob(job.id);
 
-      if (result.success) {
-        toast.success("Job deleted successfully");
-        router.refresh();
-      } else {
-        toast.error(result.error || "Failed to delete job");
+        if (result.success) {
+          toast.success("Job deleted successfully");
+          router.refresh();
+        } else {
+          toast.error(result.error || "Failed to delete job");
+        }
+      } catch (error) {
+        toast.error("Something went wrong");
       }
-    } catch (error) {
-      toast.error("Something went wrong");
-    } finally {
-      setIsPending(false);
-    }
+    });
   };
+
+  function handleApply() {
+    if (!user) {
+      toast.error("Please login to apply for this job");
+      return;
+    }
+    startTransition(() => {
+      try {
+        createApplication({
+          jobId: job.id,
+          candidateId: user.id,
+        });
+        toast.success("Applied successfully");
+      } catch (error) {
+        toast.error("Something went wrong");
+      }
+    });
+  }
 
   return (
     <div className="flex w-full justify-between rounded-lg border p-4 shadow-sm">
@@ -122,11 +146,13 @@ export function JobListingCard({
               aria-label="Toggle job status"
             />
             <EditJobDialog job={job} />
-            <Link href={href}>
-              <Button variant="outline" size="sm">
-                View Details
-              </Button>
-            </Link>
+            {href && (
+              <Link href={href}>
+                <Button variant="outline" size="sm">
+                  View Details
+                </Button>
+              </Link>
+            )}
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button variant="destructive" size="sm" disabled={isPending}>
@@ -137,13 +163,16 @@ export function JobListingCard({
                 <AlertDialogHeader>
                   <AlertDialogTitle>Are you sure?</AlertDialogTitle>
                   <AlertDialogDescription>
-                    This action cannot be undone. This will permanently delete the job listing
-                    and all associated applications.
+                    This action cannot be undone. This will permanently delete
+                    the job listing and all associated applications.
                   </AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                   <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleDelete} disabled={isPending}>
+                  <AlertDialogAction
+                    onClick={handleDelete}
+                    disabled={isPending}
+                  >
                     Delete
                   </AlertDialogAction>
                 </AlertDialogFooter>
@@ -152,13 +181,23 @@ export function JobListingCard({
           </div>
         )}
       </div>
+      {hasApplied && (
+        <div className="flex items-center gap-2">
+          <Badge className="bg-green-300" variant="default">
+            Applied
+          </Badge>
+        </div>
+      )}
 
-      {showApplyButton && (
-        <Link href={href}>
-          <Button variant="default" className="mt-2">
-            Apply
-          </Button>
-        </Link>
+      {showApplyButton && !hasApplied && (
+        <LoaderButton
+          variant="default"
+          className="mt-2"
+          onClick={handleApply}
+          isLoading={isPending}
+        >
+          Apply
+        </LoaderButton>
       )}
     </div>
   );

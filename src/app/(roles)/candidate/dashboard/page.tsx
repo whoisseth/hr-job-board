@@ -1,38 +1,35 @@
 import Link from "next/link";
-import { Briefcase, Eye, FileText, Upload } from "lucide-react";
+import { Briefcase, FileText } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { JobListingCard } from "@/components/job-listing-card";
 import { getJobs } from "../../recruiter/action";
-
-// Mock data for applications
-const applications = [
-  {
-    id: 1,
-    jobId: 1,
-    jobTitle: "Frontend Developer",
-    status: "pending",
-    appliedAt: new Date("2023-06-01"),
-  },
-  {
-    id: 2,
-    jobId: 2,
-    jobTitle: "Frontend Developer",
-    status: "shortlisted",
-    appliedAt: new Date("2023-06-25"),
-  },
-  {
-    id: 3,
-    jobId: 3,
-    jobTitle: "Frontend Developer",
-    status: "rejected",
-    appliedAt: new Date("2023-05-10"),
-  },
-];
+import { ResumeManager } from "@/components/resume-manager";
+import { db } from "@/db";
+import { resumes } from "@/db/schema";
+import { eq } from "drizzle-orm";
+import { getCurrentUser } from "@/lib/session";
+import { getJobApplicationStatus, getUserApplications } from "./action";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 export default async function CandidateDashboardPage() {
+  const user = await getCurrentUser();
+  if (!user) {
+    return <div>Not found</div>;
+  }
+
   const { data: jobListings = [], error } = await getJobs();
+  const { data: applications = [] } = await getUserApplications();
+  const { data: jobApplicationStatus } = await getJobApplicationStatus();
+
+  // Get the user's latest resume
+  const [latestResume] = await db
+    .select()
+    .from(resumes)
+    .where(eq(resumes.candidateId, user.id))
+    .orderBy(resumes.createdAt)
+    .limit(1);
 
   if (error) {
     return (
@@ -47,8 +44,23 @@ export default async function CandidateDashboardPage() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-3xl font-bold tracking-tight">Candidate Dashboard</h1>
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold tracking-tight">
+          Candidate Dashboard
+        </h1>
+        <ResumeManager
+          initialResume={
+            latestResume
+              ? {
+                  url: latestResume.url,
+                  createdAt: new Date(latestResume.createdAt),
+                }
+              : undefined
+          }
+        />
+      </div>
 
+      {/* Overview Section - Always Visible */}
       <div className="grid gap-4 md:grid-cols-2">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -85,84 +97,80 @@ export default async function CandidateDashboardPage() {
         </Card>
       </div>
 
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold">Recent Job Listings</h2>
-          <div className="flex items-center gap-4">
-            <Link href="/candidate/resume">
-              <Button variant="outline">
-                <Upload className="mr-2 h-4 w-4" />
-                Upload Resume
-              </Button>
-            </Link>
-            <Link href="/candidate/resume">
-              <Button variant="outline">
-                <Eye className="mr-2 h-4 w-4" />
-                View Resume
-              </Button>
-            </Link>
+      {/* Tabs Section */}
+      <Tabs defaultValue="jobs" className="space-y-4">
+        <TabsList className="">
+          <TabsTrigger value="jobs">Available Jobs</TabsTrigger>
+          <TabsTrigger value="applications">My Applications</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="jobs" className="space-y-4">
+          <div className="space-y-4">
+            {jobListings.map((job) => (
+              <div key={job.id} className="flex items-center justify-between">
+                <JobListingCard
+                  user={user}
+                  job={job}
+                  isRecruiter={false}
+                  href={`/candidate/application/${job.id}`}
+                  hasApplied={applications.some((app) => app.jobId === job.id)}
+                  showApplyButton={true}
+                />
+              </div>
+            ))}
+            {jobListings.length === 0 && (
+              <div className="text-center text-muted-foreground">
+                No jobs available at the moment
+              </div>
+            )}
           </div>
-        </div>
+        </TabsContent>
 
-        <div className="space-y-4">
-          {jobListings.map((job) => (
-            <div key={job.id} className="flex items-center justify-between">
-              <JobListingCard
-                job={job}
-                isRecruiter={false}
-                href={`/candidate/application/${job.id}`}
-                hasApplied={applications.some((app) => app.jobId === job.id)}
-                showApplyButton={true}
-              />
-            </div>
-          ))}
-        </div>
-      </div>
-
-      <div className="space-y-4">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold">Your Applications</h2>
-          <Link href="/candidate/applications">
-            <Button variant="link" className="h-auto p-0">
-              View All
-            </Button>
-          </Link>
-        </div>
-
-        <div className="space-y-4">
-          {applications.map((application) => (
-            <div
-              key={application.id}
-              className="flex flex-col rounded-lg border p-4 shadow-sm"
-            >
-              <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
-                <div>
-                  <h3 className="text-lg font-semibold">
-                    {application.jobTitle}
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Applied on {application.appliedAt.toLocaleDateString()}
-                  </p>
-                </div>
-                <div className="flex items-center">
-                  <span
-                    className={`rounded-full px-3 py-1 text-xs font-medium ${
-                      application.status === "pending"
-                        ? "bg-blue-100 text-blue-800"
-                        : application.status === "shortlisted"
-                          ? "bg-green-100 text-green-800"
-                          : "bg-red-100 text-red-800"
-                    }`}
-                  >
-                    {application.status.charAt(0).toUpperCase() +
-                      application.status.slice(1)}
-                  </span>
+        <TabsContent value="applications" className="space-y-4">
+          <div className="space-y-4">
+            {jobApplicationStatus?.applications?.map((application) => (
+              <div
+                key={application.id}
+                className="flex flex-col rounded-lg border p-4 shadow-sm"
+              >
+                <div className="flex flex-col justify-between gap-2 sm:flex-row sm:items-center">
+                  <div>
+                    <h3 className="text-lg font-semibold">
+                      {application.jobTitle}
+                    </h3>
+                    <p className="text-sm text-muted-foreground">
+                      Applied on{" "}
+                      {new Date(application.appliedAt).toLocaleDateString()}
+                    </p>
+                  </div>
+                  <div className="flex items-center">
+                    <span
+                      className={`rounded-full px-3 py-1 text-xs font-medium ${
+                        application.status === "new"
+                          ? "bg-blue-100 text-blue-800"
+                          : application.status === "shortlisted"
+                            ? "bg-green-100 text-green-800"
+                            : "bg-red-100 text-red-800"
+                      }`}
+                    >
+                      {application.status === "new"
+                        ? "Pending"
+                        : application.status.charAt(0).toUpperCase() +
+                          application.status.slice(1)}
+                    </span>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-      </div>
+            ))}
+            {(!jobApplicationStatus?.applications ||
+              jobApplicationStatus.applications.length === 0) && (
+              <div className="text-center text-muted-foreground">
+                No applications found
+              </div>
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

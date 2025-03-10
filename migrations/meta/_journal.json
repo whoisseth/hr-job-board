@@ -5,50 +5,15 @@
     {
       "idx": 0,
       "version": "6",
-      "when": 1741199194817,
-      "tag": "0000_strong_magus",
+      "when": 1741608385993,
+      "tag": "0000_sudden_talisman",
       "breakpoints": true
     },
     {
       "idx": 1,
       "version": "6",
-      "when": 1741199411104,
-      "tag": "0001_gigantic_cyclops",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "6",
-      "when": 1741202412341,
-      "tag": "0002_nice_maggott",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "6",
-      "when": 1741250855468,
-      "tag": "0003_eager_madelyne_pryor",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "6",
-      "when": 1741346629053,
-      "tag": "0004_unknown_ulik",
-      "breakpoints": true
-    },
-    {
-      "idx": 5,
-      "version": "6",
-      "when": 1741348811955,
-      "tag": "0005_great_moondragon",
-      "breakpoints": true
-    },
-    {
-      "idx": 6,
-      "version": "6",
-      "when": 1741368619003,
-      "tag": "0006_lame_tarot",
+      "when": 1741630433895,
+      "tag": "0001_eminent_vision",
       "breakpoints": true
     }
   ]

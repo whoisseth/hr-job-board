@@ -44,8 +44,6 @@ export async function submitApplication(data: SubmitApplicationInput) {
       .values({
         jobId: data.jobId,
         candidateId: user.id,
-        resumeUrl: data.resumeUrl,
-        parsedDetails: data.parsedDetails,
         status: "new",
         createdAt: new Date(),
         updatedAt: new Date(),
