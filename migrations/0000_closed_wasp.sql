@@ -67,9 +67,6 @@ CREATE TABLE `resume` (
 	`experience` text DEFAULT '{}' NOT NULL,
 	`projects` text DEFAULT '{}' NOT NULL,
 	`education` text DEFAULT '[]' NOT NULL,
-	`parsed_at` integer,
-	`parse_status` text DEFAULT 'pending' NOT NULL,
-	`parse_error` text,
 	`created_at` integer NOT NULL,
 	`updated_at` integer,
 	FOREIGN KEY (`candidate_id`) REFERENCES `user`(`id`) ON UPDATE no action ON DELETE cascade
@@ -88,7 +85,9 @@ CREATE TABLE `user` (
 	`userName` text,
 	`email_verified` integer,
 	`role` text,
-	`is_onboarded` integer DEFAULT false
+	`is_onboarded` integer DEFAULT false,
+	`resume_url` text,
+	`resume_uploaded_at` integer
 );
 --> statement-breakpoint
 CREATE TABLE `verify_email_tokens` (

@@ -98,8 +98,6 @@ export const applications = sqliteTable("application", {
   candidateId: integer("candidate_id", { mode: "number" })
     .references(() => users.id, { onDelete: "cascade" })
     .notNull(),
-  // resumeUrl: text("resume_url").notNull(),
-  // parsedDetails: text("parsed_details").notNull(),
   status: text("status", {
     enum: ["new", "shortlisted", "rejected"],
   }).notNull(),
