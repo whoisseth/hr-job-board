@@ -107,13 +107,19 @@ export function JobListingCard({
       toast.error("Please login to apply for this job");
       return;
     }
-    startTransition(() => {
+    startTransition(async () => {
       try {
-        createApplication({
+        const result = await createApplication({
           jobId: job.id,
           candidateId: user.id,
         });
-        toast.success("Applied successfully");
+        
+        if (result.success) {
+          toast.success("Applied successfully");
+          router.refresh();
+        } else {
+          toast.error(result.error || "Failed to apply");
+        }
       } catch (error) {
         toast.error("Something went wrong");
       }

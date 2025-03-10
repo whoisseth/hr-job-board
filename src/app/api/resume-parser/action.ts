@@ -4,6 +4,7 @@ import { ResumeStructuredData } from "@/db/schema";
 import { getCurrentUser } from "@/lib/session";
 import { eq } from "drizzle-orm";
 import { uploadResume } from "@/lib/resume";
+import { revalidatePath } from "next/cache";
 
 export const maxDuration = 60;
 
@@ -93,6 +94,8 @@ export async function addResumeData({
         })
         .returning();
     }
+
+    revalidatePath("/candidate/dashboard");
 
     return { success: true, data: resume };
   } catch (error) {

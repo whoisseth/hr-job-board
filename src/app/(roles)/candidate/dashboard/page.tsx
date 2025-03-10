@@ -1,7 +1,5 @@
-import Link from "next/link";
 import { Briefcase, FileText } from "lucide-react";
 
-import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { JobListingCard } from "@/components/job-listing-card";
 import { getJobs } from "../../recruiter/action";

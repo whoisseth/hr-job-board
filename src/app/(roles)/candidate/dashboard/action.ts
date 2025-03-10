@@ -1,9 +1,9 @@
 "use server";
 
 import { db } from "@/db";
-import { applications, jobs } from "@/db/schema";
+import { applications, jobs, resumes } from "@/db/schema";
 import { getCurrentUser } from "@/lib/session";
-import { eq, and } from "drizzle-orm";
+import { eq, and, desc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 type Application = typeof applications.$inferSelect;
@@ -21,6 +21,21 @@ export async function createApplication({
   candidateId: number;
 }) {
   try {
+    // Check if user has uploaded a resume
+    const [latestResume] = await db
+      .select()
+      .from(resumes)
+      .where(eq(resumes.candidateId, candidateId))
+      .orderBy(desc(resumes.createdAt))
+      .limit(1);
+
+    if (!latestResume) {
+      return {
+        success: false,
+        error: "Please upload your resume before applying",
+      };
+    }
+
     // Check if application already exists
     const existingApplication = await db.query.applications.findFirst({
       where: and(
@@ -44,10 +59,11 @@ export async function createApplication({
         candidateId,
         status: "new",
         createdAt: new Date(),
+        updatedAt: new Date(),
       })
       .returning();
 
-    revalidatePath("/");
+    revalidatePath("/candidate/dashboard");
 
     return {
       success: true,

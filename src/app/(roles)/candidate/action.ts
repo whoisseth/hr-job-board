@@ -1,15 +1,13 @@
 "use server";
 
 import { db } from "@/db";
-import { applications } from "@/db/schema";
+import { applications, resumes } from "@/db/schema";
 import { getCurrentUser } from "@/lib/session";
-import { eq } from "drizzle-orm";
+import { eq, desc } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 
 export type SubmitApplicationInput = {
   jobId: number;
-  resumeUrl: string;
-  parsedDetails: string;
 };
 
 export async function submitApplication(data: SubmitApplicationInput) {
@@ -20,6 +18,21 @@ export async function submitApplication(data: SubmitApplicationInput) {
   }
 
   try {
+    // Check if user has uploaded a resume
+    const [latestResume] = await db
+      .select()
+      .from(resumes)
+      .where(eq(resumes.candidateId, user.id))
+      .orderBy(desc(resumes.createdAt))
+      .limit(1);
+
+    if (!latestResume) {
+      return {
+        success: false,
+        error: "Please upload your resume before applying",
+      };
+    }
+
     // Check if user has already applied
     const existingApplication = await db
       .select()
