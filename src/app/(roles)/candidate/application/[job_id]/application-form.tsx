@@ -90,14 +90,12 @@ export function ApplicationForm({ jobId, job }: ApplicationFormProps) {
 
       const result = await submitApplication({
         jobId: parseInt(jobId),
-        resumeUrl,
-        parsedDetails,
       });
 
       if (result.success) {
         setSuccess(true);
         toast.success("Application submitted successfully!");
-        
+
         // Redirect to applications page after successful submission
         setTimeout(() => {
           router.push("/candidate/applications");
