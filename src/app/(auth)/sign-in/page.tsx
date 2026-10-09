@@ -1,80 +1,66 @@
 "use client";
 
 import * as React from "react";
-import { Button, buttonVariants } from "@/components/ui/button";
+import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { btnStyles } from "@/styles/icons";
-import { Mail } from "lucide-react";
 import Link from "next/link";
-import { MagicLinkForm } from "./magic-link-form";
 
 export default function SignInPage() {
   return (
-    <div className="mx-auto flex min-h-[80dvh] items-center justify-center py-24">
-      <div className="mx-auto max-w-md space-y-6">
+    <div className="mx-auto flex min-h-[80dvh] items-center justify-center px-4 py-24">
+      <div className="w-full max-w-md space-y-6">
         <div className="space-y-2 text-center">
-          <h1 className="text-3xl font-bold">Sign In</h1>
-          <p className="text-gray-500 dark:text-gray-400">
-            Sign in to your account using one of the options below.
+          <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary font-bold text-xl mb-2">
+            SM
+          </div>
+          <h1 className="text-3xl font-bold tracking-tight">Sign In</h1>
+          <p className="text-sm text-muted-foreground">
+            Sign in to your account with Google or GitHub to continue.
           </p>
         </div>
-        <div className="space-y-4">
+
+        <div className="rounded-2xl border bg-card p-6 sm:p-8 shadow-sm space-y-4">
           <Link
             href="/api/login/google"
             className={cn(
               buttonVariants({
-                variant: "secondary",
+                variant: "outline",
               }),
-              "w-full",
+              "w-full h-12 flex items-center justify-center gap-3 text-sm font-medium hover:bg-accent/80 transition-all",
             )}
           >
-            <GoogleIcon className="mr-2 h-5 w-5 stroke-white" />
-            Sign in with Google
+            <GoogleIcon className="h-5 w-5 shrink-0" />
+            <span>Continue with Google</span>
           </Link>
+
           <Link
             href="/api/login/github"
             className={cn(
               buttonVariants({
-                variant: "secondary",
+                variant: "outline",
               }),
-              "w-full",
+              "w-full h-12 flex items-center justify-center gap-3 text-sm font-medium hover:bg-accent/80 transition-all",
             )}
           >
-            <GithubIcon className="mr-2 h-5 w-5" />
-            Sign in with GitHub
+            <GithubIcon className="h-5 w-5 shrink-0" />
+            <span>Continue with GitHub</span>
           </Link>
 
-          <div className="relative py-4">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-gray-100 px-2 text-gray-500 dark:bg-gray-950 dark:text-gray-400">
-                Or sign in with email
-              </span>
-            </div>
+          <div className="pt-2 text-center">
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              By continuing, you agree to our Terms of Service and Privacy Policy.
+            </p>
           </div>
+        </div>
 
-          <MagicLinkForm />
-
-          <div className="relative py-4">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-gray-100 px-2 text-gray-500 dark:bg-gray-950 dark:text-gray-400">
-                Other options
-              </span>
-            </div>
-          </div>
-
-          <div className="flex justify-center">
-            <Button asChild variant="ghost" className={cn(btnStyles, "w-full")}>
-              <Link href="/sign-in/email">
-                <Mail /> Sign in with Email
-              </Link>
-            </Button>
-          </div>
+        <div className="text-center text-sm text-muted-foreground">
+          Don&apos;t have an account?{" "}
+          <Link
+            href="/sign-up"
+            className="font-medium text-foreground underline underline-offset-4 hover:text-primary transition-colors"
+          >
+            Sign up
+          </Link>
         </div>
       </div>
     </div>
@@ -90,7 +76,22 @@ function GoogleIcon(props: React.SVGProps<SVGSVGElement>) {
       xmlns="http://www.w3.org/2000/svg"
     >
       <title>Google</title>
-      <path d="M12.48 10.92v3.28h7.84c-.24 1.84-.853 3.187-1.787 4.133-1.147 1.147-2.933 2.4-6.053 2.4-4.827 0-8.6-3.893-8.6-8.72s3.773-8.72 8.6-8.72c2.6 0 4.507 1.027 5.907 2.347l2.307-2.307C18.747 1.44 16.133 0 12.48 0 5.867 0 .307 5.387.307 12s5.56 12 12.173 12c3.573 0 6.267-1.173 8.373-3.36 2.16-2.16 2.84-5.213 2.84-7.667 0-.76-.053-1.467-.173-2.053H12.48z" />
+      <path
+        fill="#4285F4"
+        d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.82-2.4 3.68v3.05h3.88c2.27-2.09 3.665-5.17 3.665-9.17z"
+      />
+      <path
+        fill="#34A853"
+        d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.05c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.26v3.15C3.25 21.37 7.33 24 12 24z"
+      />
+      <path
+        fill="#FBBC05"
+        d="M5.28 14.27c-.25-.72-.38-1.49-.38-2.27s.13-1.55.38-2.27V6.58H1.26C.46 8.16 0 9.94 0 12s.46 3.84 1.26 5.42l4.02-3.15z"
+      />
+      <path
+        fill="#EA4335"
+        d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.25 2.63 1.26 6.58l4.02 3.15c.95-2.83 3.6-4.98 6.72-4.98z"
+      />
     </svg>
   );
 }
@@ -99,18 +100,13 @@ function GithubIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
     <svg
       {...props}
-      xmlns="http://www.w3.org/2000/svg"
-      width="24"
-      height="24"
+      role="img"
       viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
+      fill="currentColor"
+      xmlns="http://www.w3.org/2000/svg"
     >
-      <path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.403 5.403 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4" />
-      <path d="M9 18c-4.51 2-5-2-7-2" />
+      <title>GitHub</title>
+      <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
     </svg>
   );
 }

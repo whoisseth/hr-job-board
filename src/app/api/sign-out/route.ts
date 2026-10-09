@@ -1,13 +1,19 @@
+import { invalidateSession, validateRequest } from "@/lib/auth";
+import { deleteSessionTokenCookie } from "@/lib/session";
 import { redirect } from "next/navigation";
-import { signOutAction } from "@/actions/sign-out";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  try {
-    await signOutAction();
-    redirect("/signed-out");
-  } catch (error) {
-    redirect("/sign-in");
+  const { session } = await validateRequest();
+  if (session) {
+    try {
+      await invalidateSession(session.id);
+    } catch (e) {
+      console.error("Error invalidating session:", e);
+    }
   }
+  await deleteSessionTokenCookie();
+  redirect("/");
 }
+

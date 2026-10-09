@@ -76,7 +76,7 @@ export default function ResetPasswordPage(
           </Alert>
 
           <Button variant="default" asChild className="w-full">
-            <Link href="/sign-in/email">Login with New Password</Link>
+            <Link href="/sign-in">Return to Sign In</Link>
           </Button>
         </>
       )}
