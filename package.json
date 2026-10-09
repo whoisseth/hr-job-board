@@ -18,7 +18,7 @@
     "@aws-sdk/client-ses": "^3.731.1",
     "@aws-sdk/s3-request-presigner": "^3.758.0",
     "@hookform/resolvers": "^3.4.2",
-    "@libsql/client": "0.6.1",
+    "@libsql/client": "0.18.0",
     "@lucia-auth/adapter-drizzle": "^1.0.7",
     "@oslojs/crypto": "^1.0.1",
     "@oslojs/encoding": "^1.1.0",
