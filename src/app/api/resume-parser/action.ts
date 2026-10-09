@@ -35,10 +35,11 @@ export async function addResumeData({
       .limit(1);
 
     // Extract the key from the URL if there's an existing resume
-    const previousKey = existingResume[0]?.url
-      ? existingResume[0].url.split(
-          `${process.env.AWS_S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/`
-        )[1]
+    const previousUrl = existingResume[0]?.url;
+    const previousKey = previousUrl
+      ? previousUrl.includes(".amazonaws.com/")
+        ? previousUrl.split(".amazonaws.com/")[1]
+        : previousUrl.replace("/uploads/resumes/", "")
       : undefined;
 
     // Upload new resume

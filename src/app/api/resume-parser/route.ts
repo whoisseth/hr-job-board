@@ -8,7 +8,7 @@ import { uploadResume } from "@/lib/resume";
 import { addResumeData } from "./action";
 
 // LLM
-import { groq } from "@ai-sdk/groq";
+import { createGroq } from "@ai-sdk/groq";
 import { generateText } from "ai";
 import { getCurrentUser } from "@/lib/session";
 
@@ -231,13 +231,55 @@ export async function POST(req: NextRequest) {
     Resume text to analyze:
     ${parsedText}`;
 
-    console.log("Sending to LLM for processing...");
-    const { text } = await generateText({
-      model: groq("gemma2-9b-it"),
-      prompt,
-      temperature: 0.1,
-      maxTokens: 1000,
-    });
+    const apiKey = process.env.GROQ_API_KEY;
+    if (!apiKey || apiKey.trim() === "" || apiKey === "your_groq_api_key") {
+      console.error("GROQ_API_KEY is not configured in .env");
+      return new NextResponse(
+        JSON.stringify({
+          error:
+            "Groq API key is not configured. Please add your GROQ_API_KEY to your .env file.",
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+
+    const groqClient = createGroq({ apiKey: apiKey.trim() });
+    const primaryModel = process.env.GROQ_MODEL || "openai/gpt-oss-120b";
+    const candidateModels = [
+      primaryModel,
+      "qwen/qwen3.8-27b",
+      "openai/gpt-oss-20b",
+    ].filter((m, idx, arr) => arr.indexOf(m) === idx);
+
+    let text = "";
+    let lastError: any = null;
+
+    for (const modelName of candidateModels) {
+      try {
+        console.log(`Sending to LLM (${modelName}) for processing...`);
+        const result = await generateText({
+          model: groqClient(modelName),
+          prompt,
+          temperature: 0.1,
+          maxTokens: 2048,
+        });
+        text = result.text;
+        break;
+      } catch (err) {
+        console.warn(
+          `Model ${modelName} failed, trying next candidate if available:`,
+          err
+        );
+        lastError = err;
+      }
+    }
+
+    if (!text) {
+      throw lastError || new Error("Failed to generate response from LLM");
+    }
 
     console.log("Raw LLM Response:", text);
 
@@ -283,6 +325,7 @@ export async function POST(req: NextRequest) {
 
       const response = {
         fileName,
+        url: dbResult.data?.url,
         parsed: parsedResponse,
         rawText: parsedText,
         dbResult: dbResult.data,
